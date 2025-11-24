@@ -1,25 +1,45 @@
 # GNR401Proj
-# Hyperspectral Image Processing: Core Algorithms from Scratch
+# Hyperspectral Image Processing: Core & Advanced Algorithms from Scratch
 
 ### Project Overview
-This project implements fundamental image processing and enhancement algorithms applied to the **Indian Pines hyperspectral remote sensing dataset**.
-
-The primary objective was to understand the mathematical foundations of these algorithms by implementing them **entirely from scratch using Python and NumPy**, without relying on high-level image processing libraries (such as OpenCV or Scikit-Image) for the core logic.
+This project implements fundamental and advanced hyperspectral image processing algorithms applied to the **Indian Pines AVIRIS dataset** (145×145×220 bands). Every algorithm is implemented **entirely from scratch using raw NumPy** — no OpenCV, no scikit-learn, no spectral processing libraries.
 
 ### Dataset
-**Indian Pines** (AVIRIS sensor): A 145x145 pixel hyperspectral data cube with 220 spectral bands.
-* **Processing approach:** The spectral bands were averaged to create a high-SNR grayscale representation for spatial processing.
-* **Ground Truth:** Used to validate edge detection results against actual land-cover class boundaries.
+**Indian Pines** (AVIRIS sensor): 145×145 pixel scene, 220 spectral bands, 16 land-cover classes.
+* Band-averaged grayscale for spatial processing; full spectral cube for classification and unmixing.
+* 16-class ground-truth map for validation.
 
 ### Implemented Algorithms
-All algorithms were implemented using raw matrix manipulation and manual convolution loops:
 
-1.  **Intensity Transformations:**
-    * **Log Transform:** Enhances details in darker regions of the spectral image.
-    * **Gamma Correction:** Non-linear brightness adjustment.
-    * **Contrast Stretching:** Linear normalization to utilize the full dynamic range (0-255).
-    * **Histogram Equalization:** Flattens the density of pixel intensities to maximize global contrast.
+#### Core Processing (`GNR401.ipynb`)
+1.  **Intensity Transformations** — Log, Gamma, Contrast Stretching, Histogram Equalization
+2.  **Spatial Filtering** — Manual 2D convolution with edge-replication padding, Mean filter, Sobel edge detection
 
-2.  **Spatial Filtering (Convolution):**
-    * **Average (Mean) Filter:** Reduces noise via spatial smoothing.
-    * **Sobel Edge Detection:** Calculates gradient magnitude using manually convolved Gx and Gy kernels.
+#### Advanced Hyperspectral Analysis (`GNR401_advanced.ipynb`)
+
+3.  **Reed–Xiaoli (RX) Anomaly Detector**
+    * Per-pixel Mahalanobis distance via full 200×200 inverse covariance estimation
+    * Tikhonov-regularised matrix inversion for numerical stability
+
+4.  **Vertex Component Analysis (VCA) — Endmember Extraction**
+    * Geometric endmember extraction via iterative orthogonal subspace projection
+    * SVD-based dimensionality reduction, null-space vertex selection
+
+5.  **Fully Constrained Linear Spectral Unmixing (FCLS)**
+    * Per-pixel constrained optimisation: non-negativity + sum-to-one abundance constraints
+    * Lawson–Hanson active-set NNLS solver implemented from scratch
+    * Augmented least-squares formulation for sum-to-one enforcement
+
+6.  **Minimum Noise Fraction (MNF) Transform**
+    * Noise covariance estimation via spatial shift-difference method
+    * Cholesky noise-whitening → eigen-decomposition → SNR-ordered components
+
+7.  **Graph-Based Semi-Supervised Label Propagation**
+    * k-NN spectral similarity graph with adaptive Gaussian kernel bandwidth
+    * Normalised graph Laplacian iterative diffusion
+    * Achieves classification from only 5% labelled pixels via MNF features
+
+8.  **Extended Morphological Attribute Profiles (EMAPs)**
+    * Two-pass connected components labeling (union-find with path compression)
+    * Area-based attribute opening/closing at multiple thresholds on PCA components
+    * Spectral-spatial feature extraction → nearest-centroid classification
